@@ -37,7 +37,7 @@ html, body, [class*="css"]  {
 /* input */
 
 .stTextInput input{
-    background:#f5e3a5;
+    background:#ffffff;
     border-radius:14px;
     padding:16px;
     font-size:18px;
@@ -115,8 +115,8 @@ to{opacity:1; transform:translateY(0);}
 # HEADER
 # -----------------------------
 
-st.markdown('<div class="title">chefAI 💕</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">cook something with what you already have &lt;3</div>', unsafe_allow_html=True)
+st.markdown('<div class="title">chefAI</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">cook something with what you already have</div>', unsafe_allow_html=True)
 
 # -----------------------------
 # SESSION STATE
@@ -129,14 +129,21 @@ if "ingredients" not in st.session_state:
 # INGREDIENT INPUT
 # -----------------------------
 
-ingredient = st.text_input("what you have in your kitchen ?")
+with st.form("ingredient_form", clear_on_submit=True):
 
-if ingredient:
+    ingredient = st.text_input(
+        "what you have in your kitchen ?",
+        placeholder="egg, tomato, rice..."
+    )
 
-    ingredient = ingredient.lower().strip()
+    submitted = st.form_submit_button("add ingredient")
 
-    if ingredient not in st.session_state.ingredients:
-        st.session_state.ingredients.append(ingredient)
+    if submitted and ingredient:
+
+        ingredient = ingredient.lower().strip()
+
+        if ingredient not in st.session_state.ingredients:
+            st.session_state.ingredients.append(ingredient)
 
 # -----------------------------
 # INGREDIENT CHIPS
@@ -191,7 +198,7 @@ if generate:
     # AI GENERATED RECIPE
     # -----------------------------
 
-    st.subheader("chefAI special 🤖")
+    st.subheader("chefAI special ")
 
     with st.spinner("thinking..."):
 
