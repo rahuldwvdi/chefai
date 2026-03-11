@@ -15,7 +15,7 @@ ChefAI is an AI-powered cooking assistant that generates recipes based on ingred
 - Pandas
 
 ## Live Demo
-https://your-streamlit-app-link
+https://chefai-m7c4t9rfpqeyai2w35dxwl.streamlit.app/
 
 ## How It Works
 1. User enters ingredients
