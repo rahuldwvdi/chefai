@@ -1,122 +1,121 @@
 import streamlit as st
-from services.ingredient_corrector import correct_ingredients
-from services.recipe_engine import match_recipes
-from services.ai_recipe_generator import generate_recipe
+from app.services.ingredient_corrector import correct_ingredients
+from app.services.recipe_engine import match_recipes
+from app.services.ai_recipe_generator import generate_recipe
 
 st.set_page_config(page_title="ChefAI", page_icon="💗", layout="centered")
 
 # -----------------------------
-# UI STYLE
+# CUSTOM UI STYLE
 # -----------------------------
 
 st.markdown("""
 <style>
 
-html, body, [class*="css"]  {
+html, body, [class*="css"] {
     font-family: Consolas, monospace;
-    background-color:#f7f7f7;
+    background-color:#f4f6fb;
 }
 
-/* title */
+/* hero section */
 
-.title {
-    font-size:64px;
-    color:#5a6ff0;
-    font-weight:bold;
+.hero{
+    background: linear-gradient(135deg,#6c7bff,#8fa6ff);
+    padding:40px;
+    border-radius:18px;
     text-align:center;
-    animation:fadeIn 1.5s ease-in;
-}
-
-.subtitle{
-    text-align:center;
-    font-size:22px;
+    color:white;
     margin-bottom:30px;
-    color:#333;
+    animation: fadeIn 1s ease-in;
+}
+
+.hero h1{
+    font-size:60px;
+    margin-bottom:5px;
+}
+
+.hero p{
+    font-size:18px;
 }
 
 /* input */
 
 .stTextInput input{
-    background:#ffffff;
-    border-radius:14px;
-    padding:16px;
-    font-size:18px;
+    border-radius:12px;
+    padding:14px;
+    font-size:16px;
 }
 
-/* button */
+/* buttons */
 
 .stButton button{
-    background:#5a6ff0;
+    background:#6c7bff;
     color:white;
     border-radius:10px;
     padding:10px 25px;
-    font-size:18px;
+    font-size:16px;
     transition:0.3s;
 }
 
 .stButton button:hover{
     transform:scale(1.05);
-    background:#4254d6;
-}
-
-/* recipe cards */
-
-.recipe-card{
-    background:white;
-    padding:20px;
-    border-radius:15px;
-    margin-top:20px;
-    box-shadow:0px 5px 15px rgba(0,0,0,0.08);
-    animation:fadeIn 0.7s ease-in;
+    background:#5664e5;
 }
 
 /* ingredient chips */
 
 .chip{
-    display:inline-block;
-    background:#f5e3a5;
-    padding:6px 14px;
-    border-radius:12px;
-    margin:4px;
-    font-size:14px;
+display:inline-block;
+background:#ffffff;
+padding:6px 14px;
+border-radius:20px;
+margin:5px;
+box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
 
-/* floating hearts */
+/* recipe card */
 
-.heart{
-  position: fixed;
-  bottom: -10px;
-  font-size: 20px;
-  animation: floatUp 8s infinite;
-  color:#ff5c8d;
+.recipe-card{
+background:white;
+border-radius:18px;
+padding:20px;
+margin-top:20px;
+box-shadow:0px 6px 20px rgba(0,0,0,0.08);
+animation:fadeIn 0.6s ease-in;
 }
 
-@keyframes floatUp {
-  0% {transform: translateY(0); opacity:1;}
-  100% {transform: translateY(-900px); opacity:0;}
+.recipe-card h3{
+color:#4c5cff;
 }
+
+/* spinner */
+
+.spinner{
+text-align:center;
+font-size:18px;
+color:#555;
+}
+
+/* animation */
 
 @keyframes fadeIn{
-from{opacity:0; transform:translateY(20px);}
+from{opacity:0; transform:translateY(10px);}
 to{opacity:1; transform:translateY(0);}
 }
 
 </style>
-
-<div class="heart" style="left:10%">💗</div>
-<div class="heart" style="left:25%">💗</div>
-<div class="heart" style="left:40%">💗</div>
-<div class="heart" style="left:60%">💗</div>
-<div class="heart" style="left:75%">💗</div>
-
 """, unsafe_allow_html=True)
 
 # -----------------------------
-# HEADER
+# HERO SECTION
 # -----------------------------
 
-st.markdown('<div class="title">chefAI</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">cook something with what you already have</div>', unsafe_allow_html=True)
+st.markdown("""
+<div class="hero">
+<h1>ChefAI 💗</h1>
+<p>cook something amazing with what you already have</p>
+</div>
+""", unsafe_allow_html=True)
 
 # -----------------------------
 # SESSION STATE
@@ -132,57 +131,63 @@ if "ingredients" not in st.session_state:
 with st.form("ingredient_form", clear_on_submit=True):
 
     ingredient = st.text_input(
-        "what you have in your kitchen ?",
+        "Add ingredient",
         placeholder="egg, tomato, rice..."
     )
 
-    submitted = st.form_submit_button("add ingredient")
+    submitted = st.form_submit_button("Add")
 
     if submitted and ingredient:
 
-        ingredient = ingredient.lower().strip()
+        items = [i.strip().lower() for i in ingredient.split(",")]
 
-        if ingredient not in st.session_state.ingredients:
-            st.session_state.ingredients.append(ingredient)
+        for i in items:
+            if i and i not in st.session_state.ingredients:
+                st.session_state.ingredients.append(i)
 
 # -----------------------------
-# INGREDIENT CHIPS
+# INGREDIENT DISPLAY
 # -----------------------------
 
 if st.session_state.ingredients:
 
-    chip_html = ""
+    st.write("### Ingredients")
 
-    for i in st.session_state.ingredients:
-        chip_html += f'<span class="chip">{i}</span>'
+    cols = st.columns(4)
 
-    st.markdown(chip_html, unsafe_allow_html=True)
+    for idx, ing in enumerate(st.session_state.ingredients):
+
+        with cols[idx % 4]:
+
+            if st.button(f"❌ {ing}", key=ing):
+                st.session_state.ingredients.remove(ing)
+                st.rerun()
 
 # -----------------------------
 # GENERATE BUTTON
 # -----------------------------
 
-generate = st.button("generate recipe 🍳")
+generate = st.button("Generate Recipes 🍳")
 
 # -----------------------------
-# GENERATE RESULTS
+# GENERATE RECIPES
 # -----------------------------
 
 if generate:
 
+    if not st.session_state.ingredients:
+        st.warning("Add some ingredients first!")
+        st.stop()
+
     ingredients = correct_ingredients(st.session_state.ingredients)
 
-    with st.spinner("chefAI is cooking something cute... 💕"):
+    st.write("---")
 
-        recipes = match_recipes(ingredients)
+    st.write("## Recipes you can cook")
 
-    # -----------------------------
-    # DATABASE RECIPES
-    # -----------------------------
+    recipes = match_recipes(ingredients)
 
     if recipes:
-
-        st.subheader("recipes you can cook")
 
         for r in recipes[:3]:
 
@@ -194,13 +199,16 @@ if generate:
             </div>
             """, unsafe_allow_html=True)
 
+    else:
+        st.info("No strong database matches.")
+
     # -----------------------------
-    # AI GENERATED RECIPE
+    # AI RECIPE
     # -----------------------------
 
-    st.subheader("chefAI special ")
+    st.write("## ChefAI Special 🤖")
 
-    with st.spinner("thinking..."):
+    with st.spinner("Cooking up something special..."):
 
         ai_recipe = generate_recipe(ingredients)
 
