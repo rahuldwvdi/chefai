@@ -1,7 +1,7 @@
 import streamlit as st
-from app.services.ingredient_corrector import correct_ingredients
-from app.services.recipe_engine import match_recipes
-from app.services.ai_recipe_generator import generate_recipe
+from services.ingredient_corrector import correct_ingredients
+from services.recipe_engine import match_recipes
+from services.ai_recipe_generator import generate_recipe
 
 st.set_page_config(page_title="ChefAI", page_icon="💗", layout="centered")
 
